@@ -5,8 +5,10 @@ import { flexRender, getCoreRowModel, useReactTable, type SortingState } from "@
 import { Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { usePosts } from "@/lib/hooks/use-posts";
-import { PlatformFilter, SortDirection, useModalState, usePostsTableState } from "@/lib/stores/ui-store";
+import { SortDirection, useModalState, usePostsTableState } from "@/lib/stores/ui-store";
 import { createPostsColumns } from "./posts-table-columns";
+import { PostsTableEmpty } from "./posts-table-empty";
+import { PostsTableError } from "./posts-table-error";
 import { PostsTableFilters } from "./posts-table-filters";
 import { PostsTablePagination } from "./posts-table-pagination";
 import { PostsTableSkeleton } from "./posts-table-skeleton";
@@ -23,7 +25,7 @@ const PostsTable = () => {
   );
 
   // Server state from TanStack Query
-  const { data, isLoading, isFetching } = usePosts({
+  const { data, isLoading, isFetching, isError, error, refetch } = usePosts({
     page,
     limit: pageSize,
     sortBy: sortColumn,
@@ -68,20 +70,14 @@ const PostsTable = () => {
     return <PostsTableSkeleton />;
   }
 
+  // Error state
+  if (isError) {
+    return <PostsTableError error={error instanceof Error ? error : null} onRetry={refetch} />;
+  }
+
   // Empty state
   if (pagination.total === 0 && !isFetching) {
-    return (
-      <div className="space-y-4">
-        <PostsTableFilters startItem={0} endItem={0} total={0} isFetching={false} />
-        <div className="rounded-md border p-8 text-center">
-          <p className="text-muted-foreground">
-            {platformFilter === PlatformFilter.All
-              ? "No posts found. Start creating content to see your analytics!"
-              : "No posts match the current filter."}
-          </p>
-        </div>
-      </div>
-    );
+    return <PostsTableEmpty />;
   }
 
   return (

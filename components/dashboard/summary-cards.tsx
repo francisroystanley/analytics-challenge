@@ -5,14 +5,20 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNumber } from "@/lib/format";
 import { useAnalyticsSummary } from "@/lib/hooks/use-analytics-summary";
+import { SummaryCardsEmpty } from "./summary-cards-empty";
+import { SummaryCardsError } from "./summary-cards-error";
 import { SummaryCardsSkeleton } from "./summary-cards-skeleton";
 import { TrendIndicator } from "./trend-indicator";
 
 const SummaryCards = () => {
-  const { data, isLoading } = useAnalyticsSummary();
+  const { data, isLoading, isError, error, refetch } = useAnalyticsSummary();
 
   if (isLoading) {
     return <SummaryCardsSkeleton />;
+  }
+
+  if (isError) {
+    return <SummaryCardsError error={error instanceof Error ? error : null} onRetry={refetch} />;
   }
 
   const {
@@ -25,17 +31,7 @@ const SummaryCards = () => {
 
   // Handle empty state
   if (postCount === 0) {
-    return (
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="col-span-full">
-          <CardContent className="py-6">
-            <p className="text-center text-muted-foreground">
-              No posts yet. Start creating content to see your analytics!
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <SummaryCardsEmpty />;
   }
 
   return (

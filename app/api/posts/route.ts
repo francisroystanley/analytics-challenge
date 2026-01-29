@@ -26,14 +26,7 @@ export interface PostsPaginatedResponse {
   };
 }
 
-const VALID_SORT_COLUMNS = [
-  "posted_at",
-  "likes",
-  "comments",
-  "shares",
-  "engagement_rate",
-  "platform",
-];
+const VALID_SORT_COLUMNS = ["posted_at", "likes", "comments", "shares", "engagement_rate", "platform"];
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -51,10 +44,7 @@ export async function GET(request: NextRequest) {
   // Parse query params
   const searchParams = request.nextUrl.searchParams;
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(
-    100,
-    Math.max(1, parseInt(searchParams.get("limit") ?? "10", 10))
-  );
+  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "10", 10)));
   const sortBy = searchParams.get("sortBy") ?? "posted_at";
   const sortOrderParam = searchParams.get("sortOrder");
   const sortOrder = sortOrderParam === SortDirection.Asc ? SortDirection.Asc : SortDirection.Desc;
@@ -65,17 +55,11 @@ export async function GET(request: NextRequest) {
 
   // Validate sortBy column
   if (!VALID_SORT_COLUMNS.includes(sortBy)) {
-    return NextResponse.json(
-      { error: `Invalid sort column: ${sortBy}` },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: `Invalid sort column: ${sortBy}` }, { status: 400 });
   }
 
   // Build base query for counting
-  let countQuery = supabase
-    .from("posts")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id);
+  let countQuery = supabase.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id);
 
   if (platform !== PlatformFilter.All) {
     countQuery = countQuery.eq("platform", platform);
@@ -84,10 +68,9 @@ export async function GET(request: NextRequest) {
   const { count, error: countError } = await countQuery;
 
   if (countError) {
-    return NextResponse.json(
-      { error: "Failed to count posts" },
-      { status: 500 }
-    );
+    console.error("Error counting posts:", countError);
+
+    return NextResponse.json({ error: "Failed to count posts" }, { status: 500 });
   }
 
   const total = count ?? 0;
@@ -111,10 +94,9 @@ export async function GET(request: NextRequest) {
   const { data: posts, error: dataError } = await dataQuery;
 
   if (dataError) {
-    return NextResponse.json(
-      { error: "Failed to fetch posts" },
-      { status: 500 }
-    );
+    console.error("Error fetching posts:", dataError);
+
+    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
   }
 
   const response: PostsPaginatedResponse = {

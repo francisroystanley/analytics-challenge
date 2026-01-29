@@ -7,12 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDailyMetrics } from "@/lib/hooks/use-daily-metrics";
 import { ChartViewType, useChartState } from "@/lib/stores/ui-store";
+import { EngagementChartError } from "./engagement-chart-error";
 import { EngagementChartInner, type ChartData } from "./engagement-chart-inner";
 import { EngagementChartSkeleton } from "./engagement-chart-skeleton";
 
 const EngagementChart = () => {
   const { chartViewType, setChartViewType } = useChartState();
-  const { data, isLoading } = useDailyMetrics({ days: 30 });
+  const { data, isLoading, isError, error, refetch } = useDailyMetrics({ days: 30 });
 
   const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics]);
 
@@ -30,6 +31,10 @@ const EngagementChart = () => {
 
   if (isLoading) {
     return <EngagementChartSkeleton />;
+  }
+
+  if (isError) {
+    return <EngagementChartError error={error instanceof Error ? error : null} onRetry={refetch} />;
   }
 
   return (

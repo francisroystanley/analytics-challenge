@@ -17,14 +17,12 @@ export const metadata: Metadata = {
   description: "Track and analyze your social media engagement metrics",
 };
 
-const RootLayout = ({ children }: Readonly<React.PropsWithChildren>) => {
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <QueryProvider>{children}</QueryProvider>
-      </body>
-    </html>
-  );
-};
+const RootLayout = ({ children }: Readonly<React.PropsWithChildren>) => (
+  <html lang="en">
+    <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <QueryProvider>{children}</QueryProvider>
+    </body>
+  </html>
+);
 
 export default RootLayout;

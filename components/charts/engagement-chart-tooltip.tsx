@@ -18,18 +18,16 @@ const tooltipStyles = {
   fontSize: "12px",
 };
 
-const EngagementChartTooltip = ({ data, left, top }: EngagementChartTooltipProps) => {
-  return (
-    <TooltipWithBounds left={left} top={top} style={tooltipStyles}>
-      <div className="font-medium">{formatDate(data.date, "chart")}</div>
-      <div className="text-muted-foreground">
-        Engagement: <span className="text-foreground font-medium">{formatNumber(data.engagement)}</span>
-      </div>
-      <div className="text-muted-foreground">
-        Reach: <span className="text-foreground font-medium">{formatNumber(data.reach)}</span>
-      </div>
-    </TooltipWithBounds>
-  );
-};
+const EngagementChartTooltip = ({ data, left, top }: EngagementChartTooltipProps) => (
+  <TooltipWithBounds left={left} top={top} style={tooltipStyles}>
+    <div className="font-medium">{formatDate(data.date, "chart")}</div>
+    <div className="text-muted-foreground">
+      Engagement: <span className="text-foreground font-medium">{formatNumber(data.engagement)}</span>
+    </div>
+    <div className="text-muted-foreground">
+      Reach: <span className="text-foreground font-medium">{formatNumber(data.reach)}</span>
+    </div>
+  </TooltipWithBounds>
+);
 
 export { EngagementChartTooltip };
