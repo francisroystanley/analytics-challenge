@@ -31,7 +31,7 @@ const updateSession = async (request: NextRequest) => {
   // Protected routes - redirect to login if not authenticated
   if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/login";
 
     return NextResponse.redirect(url);
   }
@@ -39,10 +39,10 @@ const updateSession = async (request: NextRequest) => {
   // Redirect authenticated users away from auth pages
   if (
     user &&
-    (request.nextUrl.pathname.startsWith("/auth/login") || request.nextUrl.pathname.startsWith("/auth/signup"))
+    (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup"))
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/";
 
     return NextResponse.redirect(url);
   }

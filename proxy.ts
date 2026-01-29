@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const config = {
+export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
@@ -14,8 +14,6 @@ const config = {
   ],
 };
 
-const middleware = async (request: NextRequest) => {
+export const proxy = async (request: NextRequest) => {
   return await updateSession(request);
 };
-
-export { config, middleware };
