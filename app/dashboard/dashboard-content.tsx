@@ -1,29 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { PostDetailModal } from "@/components/posts/post-detail-modal";
 import { PostsTable } from "@/components/posts/posts-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Post } from "@/lib/database.types";
+import { useModalState } from "@/lib/stores/ui-store";
 
-interface DashboardContentProps {
-  posts: Post[];
-}
-
-const DashboardContent = ({ posts = [] }: DashboardContentProps) => {
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const handlePostClick = (post: Post) => {
-    setSelectedPost(post);
-    setModalOpen(true);
-  };
+const DashboardContent = () => {
+  // Get modal state from Zustand store
+  const { selectedPost, isModalOpen, closeModal } = useModalState();
 
   const handleModalClose = (open: boolean) => {
-    setModalOpen(open);
-
     if (!open) {
-      setSelectedPost(null);
+      closeModal();
     }
   };
 
@@ -34,10 +22,10 @@ const DashboardContent = ({ posts = [] }: DashboardContentProps) => {
           <CardTitle>Posts</CardTitle>
         </CardHeader>
         <CardContent>
-          <PostsTable posts={posts} onPostClick={handlePostClick} />
+          <PostsTable />
         </CardContent>
       </Card>
-      <PostDetailModal post={selectedPost} open={modalOpen} onOpenChange={handleModalClose} />
+      <PostDetailModal post={selectedPost} open={isModalOpen} onOpenChange={handleModalClose} />
     </>
   );
 };

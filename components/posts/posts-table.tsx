@@ -1,225 +1,100 @@
 "use client";
-"use no memo";
 
-import { useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type SortingState,
-} from "@tanstack/react-table";
-import { ArrowUpDown, Instagram } from "lucide-react";
-import Image from "next/image";
-import { TikTokIcon } from "@/components/icons/tiktok-icon";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useCallback, useMemo } from "react";
+import { flexRender, getCoreRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
+import { Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Post } from "@/lib/database.types";
-import { formatDate, formatNumber } from "@/lib/format";
-import { PlatformFilter } from "@/lib/stores/ui-store";
+import { usePosts } from "@/lib/hooks/use-posts";
+import { PlatformFilter, SortDirection, useModalState, usePostsTableState } from "@/lib/stores/ui-store";
+import { createPostsColumns } from "./posts-table-columns";
+import { PostsTableFilters } from "./posts-table-filters";
+import { PostsTablePagination } from "./posts-table-pagination";
+import { PostsTableSkeleton } from "./posts-table-skeleton";
 
-interface PostsTableProps {
-  posts: Post[];
-  isLoading?: boolean;
-  onPostClick?: (post: Post) => void;
-}
+const PostsTable = () => {
+  // UI state from Zustand
+  const { page, pageSize, platformFilter, sortColumn, sortDirection, setSorting } = usePostsTableState();
+  const { openModal } = useModalState();
 
-const columns: ColumnDef<Post>[] = [
-  {
-    accessorKey: "thumbnail_url",
-    header: "",
-    cell: ({ row }) => (
-      <div className="w-10 h-10">
-        {row.original.thumbnail_url ? (
-          <Image
-            src={row.original.thumbnail_url}
-            alt="Thumbnail"
-            width={40}
-            height={40}
-            className="w-10 h-10 rounded object-cover"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-            <span className="text-xs text-muted-foreground">N/A</span>
-          </div>
-        )}
-      </div>
-    ),
-    enableSorting: false,
-  },
-  {
-    accessorKey: "caption",
-    header: "Caption",
-    cell: ({ row }) => (
-      <div className="max-w-50 truncate" title={row.original.caption ?? ""}>
-        {row.original.caption?.slice(0, 50) ?? "No caption"}
-        {(row.original.caption?.length ?? 0) > 50 ? "..." : ""}
-      </div>
-    ),
-    enableSorting: false,
-  },
-  {
-    accessorKey: "platform",
-    header: "Platform",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1">
-        {row.original.platform === "instagram" ? <Instagram className="h-4 w-4" /> : <TikTokIcon className="h-4 w-4" />}
-        <span className="capitalize">{row.original.platform}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "likes",
-    header: ({ column }) => (
-      <button
-        className="flex items-center gap-1 hover:text-foreground cursor-pointer"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Likes
-        <ArrowUpDown className="h-3 w-3" />
-      </button>
-    ),
-    cell: ({ row }) => formatNumber(row.original.likes),
-  },
-  {
-    accessorKey: "comments",
-    header: ({ column }) => (
-      <button
-        className="flex items-center gap-1 hover:text-foreground cursor-pointer"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Comments
-        <ArrowUpDown className="h-3 w-3" />
-      </button>
-    ),
-    cell: ({ row }) => formatNumber(row.original.comments),
-  },
-  {
-    accessorKey: "shares",
-    header: ({ column }) => (
-      <button
-        className="flex items-center gap-1 hover:text-foreground cursor-pointer"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Shares
-        <ArrowUpDown className="h-3 w-3" />
-      </button>
-    ),
-    cell: ({ row }) => formatNumber(row.original.shares),
-  },
-  {
-    accessorKey: "engagement_rate",
-    header: ({ column }) => (
-      <button
-        className="flex items-center gap-1 hover:text-foreground cursor-pointer"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Eng. Rate
-        <ArrowUpDown className="h-3 w-3" />
-      </button>
-    ),
-    cell: ({ row }) =>
-      row.original.engagement_rate !== null ? `${Number(row.original.engagement_rate).toFixed(2)}%` : "-",
-  },
-  {
-    accessorKey: "posted_at",
-    header: ({ column }) => (
-      <button
-        className="flex items-center gap-1 hover:text-foreground cursor-pointer"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Posted
-        <ArrowUpDown className="h-3 w-3" />
-      </button>
-    ),
-    cell: ({ row }) => formatDate(row.original.posted_at),
-  },
-];
+  // Sorting state for TanStack Table
+  const sorting: SortingState = useMemo(
+    () => [{ id: sortColumn, desc: sortDirection === SortDirection.Desc }],
+    [sortColumn, sortDirection],
+  );
 
-const PostsTable = ({ posts, isLoading = false, onPostClick }: PostsTableProps) => {
-  const [sorting, setSorting] = useState<SortingState>([{ id: "posted_at", desc: true }]);
-  const [platformFilter, setPlatformFilter] = useState<PlatformFilter>(PlatformFilter.All);
+  // Server state from TanStack Query
+  const { data, isLoading, isFetching } = usePosts({
+    page,
+    limit: pageSize,
+    sortBy: sortColumn,
+    sortOrder: sortDirection,
+    platform: platformFilter,
+  });
+  const posts = data?.posts ?? [];
+  const pagination = data?.pagination ?? { page: 1, limit: 10, total: 0, totalPages: 0 };
 
-  const filteredPosts = useMemo(() => {
-    if (platformFilter === PlatformFilter.All) return posts;
+  // Handlers
+  const handleSortingChange = useCallback(
+    (updater: SortingState | ((old: SortingState) => SortingState)) => {
+      const newSorting = typeof updater === "function" ? updater(sorting) : updater;
+      if (newSorting.length > 0) {
+        const { id, desc } = newSorting[0];
+        setSorting(id, desc ? SortDirection.Desc : SortDirection.Asc);
+      }
+    },
+    [sorting, setSorting],
+  );
 
-    return posts.filter(post => post.platform === platformFilter);
-  }, [posts, platformFilter]);
+  // Memoized columns
+  const columns = useMemo(() => createPostsColumns(), []);
 
   const table = useReactTable({
-    data: filteredPosts,
+    data: posts,
     columns,
     state: { sorting },
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    manualSorting: true,
+    manualPagination: true,
+    pageCount: pagination.totalPages,
   });
 
+  // Display range calculation
+  const startItem = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
+  const endItem = Math.min(pagination.page * pagination.limit, pagination.total);
+
+  // Loading state
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <Skeleton className="h-10 w-45" />
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <TableHead key={i}>
-                    <Skeleton className="h-4 w-16" />
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  {Array.from({ length: 8 }).map((_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
+    return <PostsTableSkeleton />;
   }
 
-  if (posts.length === 0) {
+  // Empty state
+  if (pagination.total === 0 && !isFetching) {
     return (
-      <div className="rounded-md border p-8 text-center">
-        <p className="text-muted-foreground">No posts found. Start creating content to see your analytics!</p>
+      <div className="space-y-4">
+        <PostsTableFilters startItem={0} endItem={0} total={0} isFetching={false} />
+        <div className="rounded-md border p-8 text-center">
+          <p className="text-muted-foreground">
+            {platformFilter === PlatformFilter.All
+              ? "No posts found. Start creating content to see your analytics!"
+              : "No posts match the current filter."}
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Filter */}
-      <div className="flex items-center gap-4">
-        <Select value={platformFilter} onValueChange={value => setPlatformFilter(value as PlatformFilter)}>
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter by platform" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={PlatformFilter.All}>All Platforms</SelectItem>
-            <SelectItem value={PlatformFilter.Instagram}>Instagram</SelectItem>
-            <SelectItem value={PlatformFilter.TikTok}>TikTok</SelectItem>
-          </SelectContent>
-        </Select>
-        <span className="text-sm text-muted-foreground">
-          {filteredPosts.length} {filteredPosts.length === 1 ? "post" : "posts"}
-        </span>
-      </div>
+      <PostsTableFilters startItem={startItem} endItem={endItem} total={pagination.total} isFetching={isFetching} />
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="relative rounded-md border">
+        {isFetching && (
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -238,7 +113,7 @@ const PostsTable = ({ posts, isLoading = false, onPostClick }: PostsTableProps) 
                 <TableRow
                   key={row.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onPostClick?.(row.original)}
+                  onClick={() => openModal(row.original)}
                 >
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
@@ -255,6 +130,8 @@ const PostsTable = ({ posts, isLoading = false, onPostClick }: PostsTableProps) 
           </TableBody>
         </Table>
       </div>
+
+      <PostsTablePagination totalPages={pagination.totalPages} isFetching={isFetching} />
     </div>
   );
 };
