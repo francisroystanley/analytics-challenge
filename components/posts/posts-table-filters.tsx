@@ -1,6 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlatformFilter, usePostsTableState } from "@/lib/stores/ui-store";
 
@@ -19,7 +18,7 @@ const PostsTableFilters = ({ startItem, endItem, total, isFetching }: PostsTable
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <Select value={platformFilter} onValueChange={value => setPlatformFilter(value as PlatformFilter)}>
+        <Select value={platformFilter} onValueChange={value => setPlatformFilter(value as PlatformFilter)} disabled={isFetching}>
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter by platform" />
           </SelectTrigger>
@@ -35,7 +34,6 @@ const PostsTableFilters = ({ startItem, endItem, total, isFetching }: PostsTable
           </span>
         )}
       </div>
-      {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
     </div>
   );
 };

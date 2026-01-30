@@ -103,6 +103,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_daily_metrics: {
+        Args: { days_count: number }
+        Returns: Json
+      }
       get_user_summary: {
         Args: Record<string, never>
         Returns: Json

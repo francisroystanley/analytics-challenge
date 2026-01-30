@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getDateRange } from "@/lib/analytics";
 import type { Database } from "@/lib/database.types";
 
 // Edge runtime for low latency
@@ -47,17 +46,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Calculate date range
-  const { startDate, endDate } = getDateRange(days);
-
-  // Fetch daily metrics
-  const { data: metrics, error: metricsError } = await supabase
-    .from("daily_metrics")
-    .select("*")
-    .eq("user_id", user.id)
-    .gte("date", startDate)
-    .lte("date", endDate)
-    .order("date", { ascending: true });
+  // Fetch daily metrics via Postgres function
+  const { data, error: metricsError } = await supabase.rpc("get_daily_metrics", {
+    days_count: days,
+  });
 
   if (metricsError) {
     console.error("Error fetching metrics:", metricsError);
@@ -65,11 +57,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Failed to fetch metrics" }, { status: 500 });
   }
 
-  return NextResponse.json({
-    metrics: metrics ?? [],
-    dateRange: {
-      start: startDate,
-      end: endDate,
-    },
-  });
+  return NextResponse.json(data);
 }
