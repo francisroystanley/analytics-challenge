@@ -1,7 +1,8 @@
 "use client";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlatformFilter, usePostsTableState } from "@/lib/stores/ui-store";
+import { useDashboardParams } from "@/lib/hooks/use-dashboard-params";
+import { PlatformFilter } from "@/lib/stores/ui-store";
 
 interface PostsTableFiltersProps {
   // Only server-derived data as props
@@ -13,7 +14,7 @@ interface PostsTableFiltersProps {
 
 const PostsTableFilters = ({ startItem, endItem, total, isFetching }: PostsTableFiltersProps) => {
   // UI state from Zustand
-  const { platformFilter, setPlatformFilter } = usePostsTableState();
+  const { platformFilter, setPlatformFilter } = useDashboardParams();
 
   return (
     <div className="flex items-center justify-between">

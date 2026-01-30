@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { usePostsTableState } from "@/lib/stores/ui-store";
+import { useDashboardParams } from "@/lib/hooks/use-dashboard-params";
 
 interface PostsTablePaginationProps {
   // Only server-derived data as props
@@ -15,7 +15,7 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 const PostsTablePagination = ({ totalPages, isFetching }: PostsTablePaginationProps) => {
   // UI state from Zustand
-  const { page, pageSize, setPage, setPageSize } = usePostsTableState();
+  const { page, pageSize, setPage, setPageSize } = useDashboardParams();
 
   return (
     <div className="flex items-center justify-between">

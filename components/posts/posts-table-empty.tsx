@@ -1,10 +1,11 @@
 "use client";
 
-import { PlatformFilter, usePostsTableState } from "@/lib/stores/ui-store";
+import { useDashboardParams } from "@/lib/hooks/use-dashboard-params";
+import { PlatformFilter } from "@/lib/stores/ui-store";
 import { PostsTableFilters } from "./posts-table-filters";
 
 const PostsTableEmpty = () => {
-  const { platformFilter } = usePostsTableState();
+  const { platformFilter } = useDashboardParams();
 
   return (
     <div className="space-y-4">

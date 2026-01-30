@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDailyMetrics } from "@/lib/hooks/use-daily-metrics";
-import { ChartViewType, useChartState } from "@/lib/stores/ui-store";
+import { useDashboardParams } from "@/lib/hooks/use-dashboard-params";
+import { ChartViewType } from "@/lib/stores/ui-store";
 import { EngagementChartError } from "./engagement-chart-error";
 import { EngagementChartInner, type ChartData } from "./engagement-chart-inner";
 import { EngagementChartSkeleton } from "./engagement-chart-skeleton";
 
 const EngagementChart = () => {
-  const { chartViewType, setChartViewType } = useChartState();
+  const { chartViewType, setChartViewType } = useDashboardParams();
   const { data, isLoading, isError, error, refetch } = useDailyMetrics({ days: 30 });
 
   const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics]);

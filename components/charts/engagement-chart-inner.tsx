@@ -10,7 +10,8 @@ import { AreaClosed, LinePath } from "@visx/shape";
 import { useTooltip } from "@visx/tooltip";
 import { bisector } from "d3-array";
 import { formatDate, formatNumber } from "@/lib/format";
-import { ChartViewType, useChartState } from "@/lib/stores/ui-store";
+import { useDashboardParams } from "@/lib/hooks/use-dashboard-params";
+import { ChartViewType } from "@/lib/stores/ui-store";
 import { EngagementChartTooltip } from "./engagement-chart-tooltip";
 
 export interface ChartData {
@@ -30,7 +31,7 @@ const bisectDate = bisector<ChartData, Date>(d => d.date).left;
 
 const EngagementChartInner = ({ data, width, height }: EngagementChartInnerProps) => {
   // UI state from Zustand
-  const { chartViewType } = useChartState();
+  const { chartViewType } = useDashboardParams();
 
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } = useTooltip<ChartData>();
   const innerWidth = width - margin.left - margin.right;

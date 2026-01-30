@@ -5,7 +5,8 @@ import { flexRender, getCoreRowModel, useReactTable, type SortingState } from "@
 import { Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { usePosts } from "@/lib/hooks/use-posts";
-import { SortDirection, useModalState, usePostsTableState } from "@/lib/stores/ui-store";
+import { useDashboardParams } from "@/lib/hooks/use-dashboard-params";
+import { SortDirection, useModalState } from "@/lib/stores/ui-store";
 import { createPostsColumns } from "./posts-table-columns";
 import { PostsTableEmpty } from "./posts-table-empty";
 import { PostsTableError } from "./posts-table-error";
@@ -15,7 +16,7 @@ import { PostsTableSkeleton } from "./posts-table-skeleton";
 
 const PostsTable = () => {
   // UI state from Zustand
-  const { page, pageSize, platformFilter, sortColumn, sortDirection, setSorting } = usePostsTableState();
+  const { page, pageSize, platformFilter, sortColumn, sortDirection, setSorting } = useDashboardParams();
   const { openModal } = useModalState();
 
   // Sorting state for TanStack Table
