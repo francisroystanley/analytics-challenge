@@ -55,7 +55,7 @@ jobs:
       - name: Check for new migrations
         id: check
         run: |
-          CHANGED=$(git diff --name-only ${{ steps.setup.outputs.diff_range }} -- 'supabase/migrations/*.sql')
+          CHANGED=$(git diff --name-only --diff-filter=d ${{ steps.setup.outputs.diff_range }} -- 'supabase/migrations/*.sql')
           if [ -z "$CHANGED" ]; then
             echo "has_migrations=false" >> "$GITHUB_OUTPUT"
           else
@@ -65,7 +65,7 @@ jobs:
       - name: Apply new migrations to ${{ steps.setup.outputs.target }} project
         if: steps.check.outputs.has_migrations == 'true'
         run: |
-          for file in $(git diff --name-only ${{ steps.setup.outputs.diff_range }} -- 'supabase/migrations/*.sql'); do
+          for file in $(git diff --name-only --diff-filter=d ${{ steps.setup.outputs.diff_range }} -- 'supabase/migrations/*.sql'); do
             echo "Applying $file..."
             SQL=$(cat "$file")
             RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
