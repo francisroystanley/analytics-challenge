@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ChartViewType, PlatformFilter, SortDirection } from "@/lib/stores/ui-store";
 
 const VALID_PLATFORMS = new Set<string>(Object.values(PlatformFilter));
@@ -53,7 +53,6 @@ const parsePageSize = (value: string | null): number => {
 
 const useDashboardParams = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
   // Read values
@@ -80,9 +79,9 @@ const useDashboardParams = () => {
       }
 
       const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
     },
-    [searchParams, router, pathname],
+    [searchParams, pathname],
   );
 
   const setPlatformFilter = useCallback(

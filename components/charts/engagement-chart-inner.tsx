@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { AxisBottom, AxisLeft } from "@visx/axis";
-import { curveMonotoneX } from "@visx/curve";
+import { curveLinear, curveMonotoneX } from "@visx/curve";
 import { localPoint } from "@visx/event";
 import { GridRows } from "@visx/grid";
 import { scaleLinear, scaleTime } from "@visx/scale";
@@ -101,18 +101,12 @@ const EngagementChartInner = ({ data, width, height }: EngagementChartInnerProps
       <svg width={width} height={height}>
         <defs>
           <linearGradient id="engagement-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.75} />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.25} />
           </linearGradient>
         </defs>
         <g transform={`translate(${margin.left},${margin.top})`}>
-          <GridRows
-            scale={yScale}
-            width={innerWidth}
-            strokeDasharray="3,3"
-            stroke="hsl(var(--border))"
-            strokeOpacity={0.5}
-          />
+          <GridRows scale={yScale} width={innerWidth} strokeDasharray="3,3" stroke="var(--border)" strokeOpacity={1} />
           {chartViewType === ChartViewType.Area ? (
             <AreaClosed
               data={data}
@@ -121,17 +115,15 @@ const EngagementChartInner = ({ data, width, height }: EngagementChartInnerProps
               yScale={yScale}
               curve={curveMonotoneX}
               fill="url(#engagement-gradient)"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
             />
           ) : (
             <LinePath
               data={data}
               x={d => xScale(d.date)}
               y={d => yScale(d.engagement)}
-              curve={curveMonotoneX}
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
+              curve={curveLinear}
+              stroke="var(--primary)"
+              strokeWidth={1}
             />
           )}
           <AxisBottom
@@ -139,10 +131,7 @@ const EngagementChartInner = ({ data, width, height }: EngagementChartInnerProps
             scale={xScale}
             tickFormat={d => formatDate(d as Date, "chart")}
             tickValues={data.filter((_, i) => i % tickInterval === 0).map(d => d.date)}
-            stroke="hsl(var(--border))"
-            tickStroke="hsl(var(--border))"
             tickLabelProps={() => ({
-              fill: "hsl(var(--muted-foreground))",
               fontSize: 11,
               textAnchor: "middle",
             })}
@@ -151,10 +140,7 @@ const EngagementChartInner = ({ data, width, height }: EngagementChartInnerProps
             scale={yScale}
             tickFormat={d => formatNumber(d as number)}
             numTicks={5}
-            stroke="hsl(var(--border))"
-            tickStroke="hsl(var(--border))"
             tickLabelProps={() => ({
-              fill: "hsl(var(--muted-foreground))",
               fontSize: 11,
               textAnchor: "end",
               dx: -4,
@@ -175,9 +161,7 @@ const EngagementChartInner = ({ data, width, height }: EngagementChartInnerProps
               cx={xScale(tooltipData.date)}
               cy={yScale(tooltipData.engagement)}
               r={5}
-              fill="hsl(var(--primary))"
-              stroke="hsl(var(--background))"
-              strokeWidth={2}
+              strokeWidth={1}
               pointerEvents="none"
             />
           )}
