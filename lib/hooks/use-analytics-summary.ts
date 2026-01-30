@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AnalyticsSummary } from "@/lib/analytics";
 import { queryKeys } from "@/lib/queries/keys";
+import { Post } from "../database.types";
+
+interface AnalyticsSummary {
+  totalEngagement: number;
+  averageEngagementRate: number | null;
+  topPost: Post | null;
+  trendPercentage: number | null;
+  postCount: number;
+}
 
 const fetchAnalyticsSummary = async (): Promise<AnalyticsSummary> => {
   const response = await fetch("/api/analytics/summary");
