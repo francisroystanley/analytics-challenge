@@ -28,3 +28,37 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+  sync-preview-migrations:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for new migrations
+        id: check
+        run: |
+          CHANGED=$(git diff --name-only origin/main...HEAD -- 'supabase/migrations/*.sql')
+          if [ -z "$CHANGED" ]; then
+            echo "has_migrations=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_migrations=true" >> "$GITHUB_OUTPUT"
+            echo "$CHANGED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: supabase/setup-cli@v1
+        if: steps.check.outputs.has_migrations == 'true'
+        with:
+          version: latest
+
+      - name: Apply new migrations to preview project
+        if: steps.check.outputs.has_migrations == 'true'
+        run: |
+          supabase link --project-ref "$SUPABASE_PREVIEW_PROJECT_ID"
+          supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PREVIEW_PROJECT_ID: ${{ secrets.SUPABASE_PREVIEW_PROJECT_ID }}
