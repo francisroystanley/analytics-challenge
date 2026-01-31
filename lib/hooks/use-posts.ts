@@ -1,5 +1,6 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import type { PostsPaginatedResponse } from "@/app/api/posts/route";
+import { ApiError } from "@/lib/api-error";
 import { queryKeys, type PostsListParams } from "@/lib/queries/keys";
 import { PlatformFilter, SortDirection } from "@/lib/stores/ui-store";
 
@@ -23,8 +24,7 @@ const fetchPosts = async (params: PostsListParams): Promise<PostsPaginatedRespon
   const response = await fetch(`/api/posts?${searchParams.toString()}`);
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error ?? "Failed to fetch posts");
+    throw await ApiError.fromResponse(response, "Failed to fetch posts");
   }
 
   return response.json();

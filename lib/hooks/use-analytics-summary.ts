@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ApiError } from "@/lib/api-error";
 import { queryKeys } from "@/lib/queries/keys";
 import { Post } from "../database.types";
 
@@ -14,11 +15,7 @@ const fetchAnalyticsSummary = async (): Promise<AnalyticsSummary> => {
   const response = await fetch("/api/analytics/summary");
 
   if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error("Unauthorized");
-    }
-
-    throw new Error("Failed to fetch analytics summary");
+    throw await ApiError.fromResponse(response, "Failed to fetch analytics summary");
   }
 
   return response.json();

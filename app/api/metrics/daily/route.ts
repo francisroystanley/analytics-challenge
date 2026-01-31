@@ -1,7 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import type { Database } from "@/lib/database.types";
+import { createClient } from "@/lib/supabase/server";
 
 // Edge runtime for low latency
 export const runtime = "edge";
@@ -15,26 +13,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid days parameter. Must be between 1 and 90." }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-          } catch {
-            // Ignore in Edge runtime
-          }
-        },
-      },
-    },
-  );
+  const supabase = await createClient();
 
   // Validate authentication
   const {

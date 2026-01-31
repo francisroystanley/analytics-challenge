@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ApiError } from "@/lib/api-error";
 import type { DailyMetric } from "@/lib/database.types";
 import { queryKeys } from "@/lib/queries/keys";
 
@@ -18,16 +19,7 @@ const fetchDailyMetrics = async (days: number): Promise<DailyMetricsResponse> =>
   const response = await fetch(`/api/metrics/daily?days=${days}`);
 
   if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error("Unauthorized");
-    }
-
-    if (response.status === 400) {
-      const data = await response.json();
-      throw new Error(data.error || "Invalid request");
-    }
-
-    throw new Error("Failed to fetch daily metrics");
+    throw await ApiError.fromResponse(response, "Failed to fetch daily metrics");
   }
 
   return response.json();

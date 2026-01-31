@@ -58,6 +58,7 @@ const PostsTable = () => {
     onSortingChange: handleSortingChange,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
+    enableSortingRemoval: false,
     manualPagination: true,
     pageCount: pagination.totalPages,
   });

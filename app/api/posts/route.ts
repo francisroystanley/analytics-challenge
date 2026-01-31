@@ -43,8 +43,10 @@ export async function GET(request: NextRequest) {
 
   // Parse query params
   const searchParams = request.nextUrl.searchParams;
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "10", 10)));
+  const parsedPage = parseInt(searchParams.get("page") ?? "1", 10);
+  const page = Number.isFinite(parsedPage) ? Math.max(1, parsedPage) : 1;
+  const parsedLimit = parseInt(searchParams.get("limit") ?? "10", 10);
+  const limit = Number.isFinite(parsedLimit) ? Math.min(100, Math.max(1, parsedLimit)) : 10;
   const sortBy = searchParams.get("sortBy") ?? "posted_at";
   const sortOrderParam = searchParams.get("sortOrder");
   const sortOrder = sortOrderParam === SortDirection.Asc ? SortDirection.Asc : SortDirection.Desc;
